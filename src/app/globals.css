@@ -1,0 +1,208 @@
+@import "tailwindcss";
+
+/* Tailwind v4 Dark Mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* =========================
+   Theme Mapping
+========================= */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark-light: var(--primary-dark-light);
+
+  --color-orange: var(--orange);
+  --color-orange-light: var(--orange-light);
+  --color-orange-dark-light: var(--orange-dark-light);
+
+  --color-arrival: var(--arrival);
+  --color-arrival-light: var(--arrival-light);
+  --color-arrival-dark-light: var(--arrival-dark-light);
+
+  --color-arrival-india-flag: var(--arrival-india-flag);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-light: var(--secondary-light);
+  --color-secondary-dark-light: var(--secondary-dark-light);
+
+  --color-success: var(--success);
+  --color-success-light: var(--success-light);
+  --color-success-dark-light: var(--success-dark-light);
+
+  --color-danger: var(--danger);
+  --color-danger-light: var(--danger-light);
+  --color-danger-dark-light: var(--danger-dark-light);
+
+  --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
+  --color-warning-dark-light: var(--warning-dark-light);
+
+  --color-info: var(--info);
+  --color-info-light: var(--info-light);
+  --color-info-dark-light: var(--info-dark-light);
+
+  --color-dark: var(--dark);
+  --color-dark-light: var(--dark-light);
+
+  --color-black: var(--black);
+  --color-black-light: var(--black-light);
+
+  --color-white: var(--white);
+  --color-white-light: var(--white-light);
+  --color-white-dark: var(--white-dark);
+
+  --color-header-sidebar: var(--header-sidebar);
+}
+
+/* =========================
+   Light Theme
+========================= */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  --primary: #4c5eeb;
+  --primary-light: #4c5eeb;
+  --primary-dark-light: rgba(67, 97, 238, 0.15);
+
+  --orange: #ea580c;
+  --orange-light: #ea580c;
+  --orange-dark-light: #c2410c;
+
+  --arrival: #ea580c;
+  --arrival-light: #ea580c;
+  --arrival-dark-light: #c2410c;
+
+  --arrival-india-flag: #f15b25;
+
+  --secondary: #2196f3;
+  --secondary-light: #e7f7ff;
+  --secondary-dark-light: rgb(128 93 202 / 15%);
+
+  --success: #1bac58;
+  --success-light: #1bac58;
+  --success-dark-light: rgba(0, 171, 85, 0.15);
+
+  --danger: tomato;
+  --danger-light: tomato;
+  --danger-dark-light: rgba(231, 81, 90, 0.15);
+
+  --warning: #ff9d00;
+  --warning-light: #ff9d00;
+  --warning-dark-light: rgba(226, 160, 63, 0.15);
+
+  --info: #815bc8;
+  --info-light: #815bc8;
+  --info-dark-light: rgba(33, 150, 243, 0.15);
+
+  --dark: #3b3f5c;
+  --dark-light: #eaeaec;
+
+  --black: #0e1726;
+  --black-light: #e3e4eb;
+
+  --white: #ffffff;
+  --white-light: #e0e6ed;
+  --white-dark: #888ea8;
+
+  --header-sidebar: #ffffff;
+}
+
+/* =========================
+   Dark Theme
+========================= */
+.dark {
+  --background: #0e1726;
+  --foreground: #ededed;
+
+  --header-sidebar: rgb(25 26 36);
+}
+
+/* =========================
+   Global Styles
+========================= */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================
+   Animations
+========================= */
+
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes spinnerGrow {
+  0%,
+  100% {
+    transform: scale(0);
+  }
+
+  50% {
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes flip {
+  0%,
+  100% {
+    transform: rotateY(0);
+  }
+
+  50% {
+    transform: rotateY(180deg);
+  }
+}
+
+.animate-gradient {
+  animation: gradient-animation 5s ease infinite;
+}
+
+.animate-spinnerGrow {
+  animation: spinnerGrow 0.75s linear infinite;
+}
+
+.animate-spinnerGrowSlow {
+  animation: spinnerGrow 1.5s linear infinite;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.5s ease-out forwards;
+}
+
+.animate-flip {
+  animation: flip 3s infinite;
+}
