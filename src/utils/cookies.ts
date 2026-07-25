@@ -10,7 +10,6 @@ export const setAccessToken = (
         {
 
             expires: 7,
-
             secure:
                 process.env.NODE_ENV ===
                 "production",
