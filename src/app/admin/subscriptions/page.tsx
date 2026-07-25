@@ -117,6 +117,7 @@ export default function SubscriptionPlansPage() {
             );
             toast.success(res.message || "Plan deleted successfully.");
             setDeleteOpen(false);
+            fetchPlans();
             setPlanToDelete(null);
         } catch (err: any) {
             toast.error(
