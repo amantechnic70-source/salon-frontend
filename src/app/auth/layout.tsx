@@ -1,41 +1,14 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-
-    title: "Authentication",
-
-    description:
-        "Salon Marketplace Authentication",
-
-};
-
+import AuthNavbar from "./components/AuthNavbar";
 
 export default function AuthLayout({
-
     children,
-
-}: Readonly<{
-
+}: {
     children: React.ReactNode;
-
-}>) {
-
+}) {
     return (
-
-        <main
-            className="
-            min-h-screen
-            bg-gray-100
-            dark:bg-gray-900
-            transition-colors
-            duration-300
-            "
-        >
-
-            {children}
-
-        </main>
-
+        <div className="flex min-h-screen flex-col bg-gray-100 dark:bg-black">
+            <AuthNavbar />
+            <div className="flex flex-1 flex-col">{children}</div>
+        </div>
     );
-
 }

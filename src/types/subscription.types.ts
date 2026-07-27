@@ -1,4 +1,5 @@
 export interface SubscriptionPlan {
+    isPopular: any;
     _id: string;
     planId: string;
     name: string;
@@ -34,6 +35,7 @@ export interface UpdatePlanPayload {
 }
 
 export interface ApiResponse<T> {
+    status: string;
     success: boolean;
     message?: string;
     data: T;

@@ -9,6 +9,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 
 import { authService } from "@/src/services/auth/auth.service";
 import { setAccessToken } from "@/src/utils/cookies";
+import { subscriptionService } from "@/src/services/subscrption/subscrption.service";
 
 const LoginForm = () => {
     const router = useRouter();
@@ -97,18 +98,22 @@ const LoginForm = () => {
 
                 case "SALON_OWNER":
 
-                    if (!user.salonId) {
+                    if (user.role === "SALON_OWNER") {
 
-                        router.push(
-                            "/subscription",
-                        );
+                        if (user.salonId) {
+                            router.replace("/salon/dashboard");
+                            return;
+                        }
 
-                    } else {
+                        const subscription =
+                            await subscriptionService.getPlans();
 
-                        router.push(
-                            "/salon/dashboard",
-                        );
+                        if (subscription?.status === "ACTIVE") {
+                            router.replace("/salon-onboarding/create");
+                            return;
+                        }
 
+                        router.replace("/subscription");
                     }
 
                     break;
@@ -147,7 +152,6 @@ const LoginForm = () => {
         >
 
             {/* Email */}
-
             <input
                 type="email"
                 placeholder="Email Address"
