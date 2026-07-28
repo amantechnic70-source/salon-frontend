@@ -105,10 +105,7 @@ const LoginForm = () => {
                             return;
                         }
 
-                        const subscription =
-                            await subscriptionService.getPlans();
-
-                        if (subscription?.status === "ACTIVE") {
+                        if (user.isSubscriptionActive) {
                             router.replace("/salon-onboarding/create");
                             return;
                         }
