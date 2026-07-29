@@ -14,6 +14,12 @@ import {
     FiGift,
     FiCreditCard,
     FiPieChart,
+    FiMapPin,
+    FiTag,
+    FiFileText,
+    FiShield,
+    FiBell,
+    FiClock,
 } from "react-icons/fi";
 import { IconType } from "react-icons";
 import { UserRole } from "@/src/types/auth.types";
@@ -27,7 +33,7 @@ export interface NavItem {
 export const NAVIGATION: Record<UserRole, NavItem[]> = {
     SUPER_ADMIN: [
         { label: "Dashboard", href: "/admin/dashboard", icon: FiHome },
-        { label: "subscriptions", href: "/admin/subscriptions", icon: FiCreditCard  },
+        { label: "Subscriptions", href: "/admin/subscriptions", icon: FiCreditCard },
         { label: "Analytics", href: "/admin/analytics", icon: FiBarChart2 },
         { label: "Reports", href: "/admin/reports", icon: FiPieChart },
         { label: "Salons", href: "/admin/salons", icon: FiGrid },
@@ -36,11 +42,15 @@ export const NAVIGATION: Record<UserRole, NavItem[]> = {
 
     SALON_OWNER: [
         { label: "Dashboard", href: "/salon/dashboard", icon: FiHome },
+        { label: "Branches", href: "/salon/branches", icon: FiMapPin },
         { label: "Staff", href: "/salon/staff", icon: FiUsers },
         { label: "Services", href: "/salon/services", icon: FiScissors },
         { label: "Appointments", href: "/salon/appointments", icon: FiCalendar },
         { label: "Customers", href: "/salon/customers", icon: FiUser },
-        { label: "Subscription", href: "/salon/subscription", icon: FiCreditCard },
+        { label: "Coupons", href: "/salon/coupons", icon: FiTag },
+        { label: "Invoices", href: "/salon/invoices", icon: FiFileText },
+        { label: "Reviews", href: "/salon/reviews", icon: FiStar },
+        { label: "Subscription", href: "/salon/subscriptions", icon: FiCreditCard },
         { label: "Reports", href: "/salon/reports", icon: FiPieChart },
         { label: "Salon Settings", href: "/salon/settings", icon: FiSettings },
     ],
