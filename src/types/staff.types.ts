@@ -1,7 +1,8 @@
 export interface CreateStaffPayload {
     branchId: string;
     name: string;
-    email?: string;
+    email: string;
+    password: string;
     phone?: string;
     profileImage?: string;
     designation?: string;

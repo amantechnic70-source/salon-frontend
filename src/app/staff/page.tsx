@@ -3,7 +3,7 @@
 export default function Page() {
     return (
         <div>
-            welocom to dashboard staff
+            welocom to staff user
         </div>
     )
 }

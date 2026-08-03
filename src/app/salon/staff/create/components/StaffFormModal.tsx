@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import {
     CreateStaffPayload,
     Staff,
@@ -12,7 +13,7 @@ interface StaffFormModalProps {
     mode: "create" | "edit";
     initialData?: Staff | null;
     branches: Branch[];
-    onSubmit: any;
+    onSubmit: (payload: CreateStaffPayload | UpdateStaffPayload) => Promise<void>;
     submitting: boolean;
     onCancel: () => void;
 }
@@ -21,6 +22,7 @@ const EMPTY_FORM: CreateStaffPayload = {
     branchId: "",
     name: "",
     email: "",
+    password: "",
     phone: "",
     designation: "",
     salary: undefined,
@@ -43,6 +45,7 @@ const StaffFormModal = ({
 }: StaffFormModalProps) => {
     const [form, setForm] = useState<CreateStaffPayload>(EMPTY_FORM);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [showPassword, setShowPassword] = useState(false);
 
     const isEdit = mode === "edit";
 
@@ -55,6 +58,7 @@ const StaffFormModal = ({
                         : "",
                 name: initialData.name,
                 email: initialData.email || "",
+                password: "", // never pre-filled or sent on edit
                 phone: initialData.phone || "",
                 designation: initialData.designation || "",
                 salary: initialData.salary,
@@ -100,8 +104,16 @@ const StaffFormModal = ({
         if (!form.branchId) nextErrors.branchId = "Please select a branch.";
         if (!form.name.trim()) nextErrors.name = "Staff name is required.";
 
-        if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) {
+        if (!form.email.trim()) {
+            nextErrors.email = "Email is required.";
+        } else if (!/^\S+@\S+\.\S+$/.test(form.email)) {
             nextErrors.email = "Enter a valid email address.";
+        }
+
+        if (!isEdit) {
+            if (!form.password || form.password.length < 8) {
+                nextErrors.password = "Password must be at least 8 characters.";
+            }
         }
 
         if (form.phone && !PHONE_REGEX.test(form.phone)) {
@@ -116,9 +128,15 @@ const StaffFormModal = ({
         e.preventDefault();
         if (!validate()) return;
 
-        // Strip empty optional strings so backend @IsOptional validators
-        // don't choke on "" for fields like email/phone/gender.
         const payload: any = { ...form };
+
+        // Edit mode never sends a password field to the update endpoint.
+        if (isEdit) {
+            delete payload.password;
+        }
+
+        // Strip empty optional strings so backend @IsOptional validators
+        // don't choke on "" for fields like phone/gender.
         Object.keys(payload).forEach((key) => {
             if (payload[key] === "") {
                 delete payload[key];
@@ -137,7 +155,7 @@ const StaffFormModal = ({
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     {isEdit
                         ? "Update this team member's details."
-                        : "Add a new team member to one of your branches."}
+                        : "This creates a login account for the staff member along with their profile."}
                 </p>
             </div>
 
@@ -181,14 +199,15 @@ const StaffFormModal = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="text-sm text-gray-700 dark:text-gray-300">
-                            Email
+                            Email <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="email"
                             value={form.email}
                             onChange={(e) => updateField("email", e.target.value)}
                             placeholder="priya@salon.com"
-                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-950 px-3.5 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            disabled={isEdit}
+                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-950 px-3.5 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                         {errors.email && (
                             <p className="text-xs text-red-500">{errors.email}</p>
@@ -214,6 +233,39 @@ const StaffFormModal = ({
                         )}
                     </div>
                 </div>
+
+                {!isEdit && (
+                    <div className="space-y-1.5">
+                        <label className="text-sm text-gray-700 dark:text-gray-300">
+                            Password <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={form.password}
+                                onChange={(e) =>
+                                    updateField("password", e.target.value)
+                                }
+                                placeholder="At least 8 characters"
+                                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-950 pl-3.5 pr-11 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            >
+                                {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                            </button>
+                        </div>
+                        {errors.password && (
+                            <p className="text-xs text-red-500">{errors.password}</p>
+                        )}
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                            This becomes the staff member's login password. Share it
+                            with them securely.
+                        </p>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
