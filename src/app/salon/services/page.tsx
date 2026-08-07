@@ -260,7 +260,7 @@ export default function ServicesListPage() {
                                     )}
 
                                     {/* Gradient overlay for badge legibility */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent" />
 
                                     {/* Top badges */}
                                     <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
