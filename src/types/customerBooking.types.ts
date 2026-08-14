@@ -203,3 +203,39 @@ export interface RescheduleBookingPayload {
     appointmentDate: string;
     appointmentTime: string;
 }
+
+export interface PopulatedAppointmentRef {
+    _id: string;
+    appointmentId: string;
+    salonId?: PopulatedSalonRef;
+    branchId?: PopulatedBranchRef;
+    staffId?: PopulatedStaffRef;
+    serviceIds?: PopulatedServiceRef[];
+}
+
+export interface Payment {
+    _id: string;
+    paymentId: string;
+    paymentType: string;
+    appointmentId: PopulatedAppointmentRef | string | null;
+    userId: string;
+    salonId: string | null;
+    amount: number;
+    currency: string;
+    provider: string;
+    orderId: string;
+    paymentStatus: string;
+    paymentMethod: string | null;
+    razorpayPaymentId: string | null;
+    failureReason: string | null;
+    isRefunded: boolean;
+    refundedAt: string | null;
+    createdAt: string;
+}
+
+export interface GetAppointmentPaymentsParams {
+    page?: number;
+    limit?: number;
+    paymentStatus?: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
+    paymentMethod?: "ONLINE" | "OFFLINE";
+}
