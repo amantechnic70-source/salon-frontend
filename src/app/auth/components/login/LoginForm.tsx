@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 import { authService } from "@/src/services/auth/auth.service";
-import { setAccessToken } from "@/src/utils/cookies";
+import { setAccessToken, setRole } from "@/src/utils/cookies";
 import { subscriptionService } from "@/src/services/subscrption/subscrption.service";
 
 const LoginForm = () => {
@@ -49,6 +49,10 @@ const LoginForm = () => {
 
             setAccessToken(
                 accessToken,
+            );
+
+            setRole(
+                user.role,
             );
 
             // Save Role
@@ -254,7 +258,6 @@ const LoginForm = () => {
             </div>
 
             {/* Login Button */}
-
             <button
                 type="submit"
                 disabled={loading}

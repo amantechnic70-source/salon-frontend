@@ -1,8 +1,12 @@
+export const USER_ROLES = [
+    "SUPER_ADMIN",
+    "SALON_OWNER",
+    "STAFF",
+    "CUSTOMER",
+] as const;
+
 export type UserRole =
-    | "SUPER_ADMIN"
-    | "SALON_OWNER"
-    | "STAFF"
-    | "CUSTOMER";
+    typeof USER_ROLES[number];
 
 export interface CurrentUser {
     _id: string;

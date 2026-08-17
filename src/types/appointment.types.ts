@@ -50,6 +50,12 @@ export interface GetAppointmentsParams {
 }
 
 export interface Appointment {
+    customerPhone: any;
+    paymentMethod: any;
+    customerName: string;
+    cancelReason: any;
+    cancelledBy: any;
+    bookingSource: any;
     _id: string;
     appointmentId: string;
     salonId: string;

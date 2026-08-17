@@ -4,26 +4,73 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { FiPlus, FiCalendar, FiSearch, FiClock } from "react-icons/fi";
+import { FiPlus, FiCalendar, FiSearch, FiClock, FiGlobe, FiHome, FiCreditCard } from "react-icons/fi";
 
 import { appointmentService } from "@/src/services/appointment/appointment.service";
 import { Appointment } from "@/src/types/appointment.types";
 import { Customer } from "@/src/types/customer.types";
 import { Staff } from "@/src/types/staff.types";
 
+// appointmentStatus enum: PENDING | CONFIRMED | COMPLETED | CANCELLED
 const STATUS_STYLE: Record<string, string> = {
     PENDING: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
     CONFIRMED: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
     COMPLETED: "bg-green-50 text-green-600 dark:bg-green-950/40 dark:text-green-400",
     CANCELLED: "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400",
-    RESCHEDULED: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
 };
 
-const getCustomerName = (c: Appointment["customerId"]) =>
-    typeof c === "object" ? (c as Customer).name : "Unknown";
+// paymentStatus enum: PENDING | SUCCESS | FAILED | REFUNDED
+const PAYMENT_STATUS_STYLE: Record<string, string> = {
+    SUCCESS: "bg-green-50 text-green-600 dark:bg-green-950/40 dark:text-green-400",
+    PENDING: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
+    FAILED: "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400",
+    REFUNDED: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
+};
+
+// paymentMethod enum: "ONLINE" | "OFFLINE" -> this IS the booking mode
+const PAYMENT_METHOD_META: Record<
+    string,
+    { label: string; icon: typeof FiGlobe; className: string }
+> = {
+    ONLINE: {
+        label: "Online",
+        icon: FiGlobe,
+        className:
+            "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400",
+    },
+    OFFLINE: {
+        label: "Offline",
+        icon: FiHome,
+        className:
+            "bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400",
+    },
+};
+
+// bookingSource enum: "SALON" | "CUSTOMER" | "ADMIN" -> who initiated the booking
+const BOOKING_SOURCE_LABEL: Record<string, string> = {
+    CUSTOMER: "Booked by customer",
+    SALON: "Booked by salon",
+    ADMIN: "Booked by admin",
+};
 
 const getStaffName = (s: Appointment["staffId"]) =>
     typeof s === "object" ? (s as Staff).name : "Unknown";
+
+// customerName is a snapshot that isn't always filled in (common for
+// SALON/offline walk-in bookings). Fall back to the populated Customer doc,
+// then phone, before showing a generic label.
+const getCustomerDisplayName = (a: Appointment) => {
+    if (a.customerName) return a.customerName;
+
+    if (typeof a.customerId === "object" && a.customerId) {
+        const populated = a.customerId as unknown as Customer;
+        if (populated.name) return populated.name;
+    }
+
+    if (a.customerPhone) return a.customerPhone;
+
+    return a.bookingSource === "SALON" ? "Walk-in Customer" : "Unknown Customer";
+};
 
 export default function AppointmentsListPage() {
     const router = useRouter();
@@ -90,7 +137,7 @@ export default function AppointmentsListPage() {
                 <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search by appointment ID..."
+                    placeholder="Search by appointment ID, customer name, or phone..."
                     className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 pl-10 pr-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-shadow"
                 />
             </div>
@@ -130,57 +177,109 @@ export default function AppointmentsListPage() {
                 </div>
             ) : (
                 <div className="space-y-3">
-                    {appointments.map((a) => (
-                        <button
-                            key={a._id}
-                            onClick={() => router.push(`/salon/appointments/${a._id}`)}
-                            className="w-full text-left rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-5 hover:border-primary/40 hover:shadow-sm transition-all"
-                        >
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
-                                        {getCustomerName(a.customerId).charAt(0).toUpperCase()}
+                    {appointments.map((a) => {
+                        const mode = PAYMENT_METHOD_META[a.paymentMethod] ?? {
+                            label: a.paymentMethod,
+                            icon: FiGlobe,
+                            className:
+                                "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
+                        };
+                        const ModeIcon = mode.icon;
+                        const hasDiscount = a.discountAmount > 0;
+
+                        return (
+                            <button
+                                key={a._id}
+                                onClick={() => router.push(`/salon/appointments/${a._id}`)}
+                                className="w-full text-left rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-5 hover:border-primary/40 hover:shadow-sm transition-all"
+                            >
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+                                            {getCustomerDisplayName(a).charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-gray-900 dark:text-white truncate">
+                                                {getCustomerDisplayName(a)}
+                                            </p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                                                {a.appointmentId} · with {getStaffName(a.staffId)}
+                                                {a.customerPhone ? ` · ${a.customerPhone}` : ""}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="min-w-0">
-                                        <p className="font-medium text-gray-900 dark:text-white truncate">
-                                            {getCustomerName(a.customerId)}
-                                        </p>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500">
-                                            {a.appointmentId} · with {getStaffName(a.staffId)}
-                                        </p>
+
+                                    <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6">
+                                        <div className="text-right sm:text-left">
+                                            <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1.5 sm:justify-start justify-end">
+                                                <FiClock size={13} />
+                                                {new Date(a.appointmentDate).toLocaleDateString(
+                                                    "en-IN",
+                                                    { day: "numeric", month: "short" }
+                                                )}{" "}
+                                                · {a.appointmentTime}
+                                            </p>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
+                                                ₹{a.finalAmount}
+                                                {hasDiscount && (
+                                                    <span className="ml-1.5 text-xs font-normal text-gray-400 line-through">
+                                                        ₹{a.totalAmount}
+                                                    </span>
+                                                )}
+                                            </p>
+                                        </div>
+
+                                        <span
+                                            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                                                STATUS_STYLE[a.appointmentStatus] ||
+                                                "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                                            }`}
+                                        >
+                                            {a.appointmentStatus}
+                                        </span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6">
-                                    <div className="text-right sm:text-left">
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
-                                            <FiClock size={13} />
-                                            {new Date(a.appointmentDate).toLocaleDateString(
-                                                "en-IN",
-                                                { day: "numeric", month: "short" }
-                                            )}{" "}
-                                            · {a.appointmentTime}
-                                        </p>
-                                        <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
-                                            ₹{a.finalAmount}
-                                        </p>
-                                    </div>
+                                {/* Meta row: booking mode (online/offline), booking source, payment status */}
+                                <div className="mt-3 flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+                                    <span
+                                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ${mode.className}`}
+                                    >
+                                        <ModeIcon size={12} />
+                                        {mode.label}
+                                    </span>
+
+                                    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                        <FiCreditCard size={12} />
+                                        {BOOKING_SOURCE_LABEL[a.bookingSource] || a.bookingSource}
+                                    </span>
 
                                     <span
-                                        className={`
-                                        shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium
-                                        ${
-                                            STATUS_STYLE[a.appointmentStatus] ||
+                                        className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                                            PAYMENT_STATUS_STYLE[a.paymentStatus] ||
                                             "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-                                        }
-                                        `}
+                                        }`}
                                     >
-                                        {a.appointmentStatus}
+                                        Payment: {a.paymentStatus}
                                     </span>
+
+                                    {a.serviceIds?.length > 0 && (
+                                        <span className="rounded-full px-2.5 py-1 text-[11px] font-medium bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                            {a.serviceIds.length} service
+                                            {a.serviceIds.length > 1 ? "s" : ""}
+                                        </span>
+                                    )}
+
+                                    {a.isCancelled && (a.cancelledBy || a.cancelReason) && (
+                                        <span className="rounded-full px-2.5 py-1 text-[11px] font-medium bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-400">
+                                            Cancelled by {a.cancelledBy?.toLowerCase() || "unknown"}
+                                            {a.cancelReason ? `: ${a.cancelReason}` : ""}
+                                        </span>
+                                    )}
                                 </div>
-                            </div>
-                        </button>
-                    ))}
+                            </button>
+                        );
+                    })}
                 </div>
             )}
         </div>

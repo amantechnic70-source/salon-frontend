@@ -1,5 +1,9 @@
 import Cookies from "js-cookie";
 
+// ==========================================
+// ACCESS TOKEN
+// ==========================================
+
 export const setAccessToken = (
     token: string,
 ) => {
@@ -8,19 +12,23 @@ export const setAccessToken = (
         "accessToken",
         token,
         {
-
             expires: 7,
+
             secure:
                 process.env.NODE_ENV ===
                 "production",
 
             sameSite: "strict",
 
+            path: "/",
         },
     );
 
 };
 
+// ==========================================
+// GET ACCESS TOKEN
+// ==========================================
 
 export const getAccessToken = () => {
 
@@ -30,12 +38,82 @@ export const getAccessToken = () => {
 
 };
 
+// ==========================================
+// REMOVE ACCESS TOKEN
+// ==========================================
 
-export const removeAccessToken =
-    () => {
+export const removeAccessToken = () => {
 
-        Cookies.remove(
-            "accessToken",
-        );
+    Cookies.remove(
+        "accessToken",
+        {
+            path: "/",
+        },
+    );
 
-    };
+};
+
+// ==========================================
+// ROLE
+// ==========================================
+
+export const setRole = (
+    role: string,
+) => {
+
+    Cookies.set(
+        "role",
+        role,
+        {
+            expires: 7,
+
+            secure:
+                process.env.NODE_ENV ===
+                "production",
+
+            sameSite: "strict",
+
+            path: "/",
+        },
+    );
+
+};
+
+// ==========================================
+// GET ROLE
+// ==========================================
+
+export const getRole = () => {
+
+    return Cookies.get(
+        "role",
+    );
+
+};
+
+// ==========================================
+// REMOVE ROLE
+// ==========================================
+
+export const removeRole = () => {
+
+    Cookies.remove(
+        "role",
+        {
+            path: "/",
+        },
+    );
+
+};
+
+// ==========================================
+// LOGOUT
+// ==========================================
+
+export const clearAuthCookies = () => {
+
+    removeAccessToken();
+
+    removeRole();
+
+};
