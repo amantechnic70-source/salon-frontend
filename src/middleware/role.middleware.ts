@@ -3,7 +3,7 @@ import {
 } from "next/server";
 
 import {
-    getAuthPayload,
+    getAccessToken,
 } from "./auth.middleware";
 
 export type UserRole =
@@ -12,61 +12,116 @@ export type UserRole =
     | "STAFF"
     | "CUSTOMER";
 
-// ==========================================
-// GET USER ROLE
-// ==========================================
+interface JwtPayload {
 
-export const getUserRole = async (
+    sub?: string;
+
+    email?: string;
+
+    role?: UserRole;
+
+    salonId?: string;
+
+    iat?: number;
+
+    exp?: number;
+
+}
+
+export const getUserRole = (
     request: NextRequest,
-): Promise<UserRole | null> => {
+): UserRole | null => {
 
-    const payload =
-        await getAuthPayload(
+    const token =
+        getAccessToken(
             request,
         );
 
-    if (!payload) {
-        return null;
-    }
-
-    const role =
-        payload.role;
-
-    if (
-        role !== "SUPER_ADMIN" &&
-        role !== "SALON_OWNER" &&
-        role !== "STAFF" &&
-        role !== "CUSTOMER"
-    ) {
+    if (!token) {
 
         return null;
 
     }
 
-    return role;
+    try {
 
-};
+        const parts =
+            token.split(".");
 
-// ==========================================
-// CHECK ROLE
-// ==========================================
+        if (
+            parts.length !== 3
+        ) {
 
-export const hasRole = async (
-    request: NextRequest,
-    allowedRoles: UserRole[],
-): Promise<boolean> => {
+            return null;
 
-    const role =
-        await getUserRole(
-            request,
-        );
+        }
 
-    if (!role) {
-        return false;
+        const payload =
+            JSON.parse(
+                Buffer
+                    .from(
+                        parts[1],
+                        "base64url",
+                    )
+                    .toString(),
+            ) as JwtPayload;
+
+        // ==========================================
+        // CHECK EXPIRATION
+        // ==========================================
+
+        if (
+            payload.exp &&
+            payload.exp <
+                Math.floor(
+                    Date.now() / 1000,
+                )
+        ) {
+
+            return null;
+
+        }
+
+        // ==========================================
+        // CHECK ROLE
+        // ==========================================
+
+        if (
+            !payload.role
+        ) {
+
+            return null;
+
+        }
+
+        const validRoles: UserRole[] = [
+
+            "SUPER_ADMIN",
+
+            "SALON_OWNER",
+
+            "STAFF",
+
+            "CUSTOMER",
+
+        ];
+
+        if (
+            !validRoles.includes(
+                payload.role,
+            )
+        ) {
+
+            return null;
+
+        }
+
+        return payload.role;
+
+    } catch {
+
+        return null;
+
     }
-
-    return allowedRoles.includes(
-        role,
-    );
 
 };

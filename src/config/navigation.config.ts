@@ -65,7 +65,7 @@ export const NAVIGATION: Record<UserRole, NavItem[]> = {
     CUSTOMER: [
         { label: "Home", href: "/customer/home", icon: FiHome },
         { label: "My Bookings", href: "/customer/bookings", icon: FiCalendar },
-        { label: "Reward Points", href: "/customer/rewards", icon: FiGift },
+        // { label: "Reward Points", href: "/customer/rewards", icon: FiGift },
         { label: "Reviews", href: "/customer/reviews", icon: FiStar },
         { label: "Profile", href: "/customer/profile", icon: FiUser },
     ],
