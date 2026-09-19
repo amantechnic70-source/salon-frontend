@@ -9,14 +9,32 @@ import {
 } from "@/src/types/staff.types";
 import { Branch } from "@/src/types/branch.types";
 
-interface StaffFormModalProps {
-    mode: "create" | "edit";
-    initialData?: Staff | null;
-    branches: Branch[];
-    onSubmit: (payload: CreateStaffPayload | UpdateStaffPayload) => Promise<void>;
-    submitting: boolean;
-    onCancel: () => void;
-}
+// interface StaffFormModalProps {
+//     mode: "create" | "edit";
+//     initialData?: Staff | null;
+//     branches: Branch[];
+//     onSubmit: (payload: CreateStaffPayload | UpdateStaffPayload) => Promise<void>;
+//     submitting: boolean;
+//     onCancel: () => void;
+// }
+
+type StaffFormModalProps =
+    | {
+        mode: "create";
+        initialData?: null;
+        branches: Branch[];
+        onSubmit: (payload: CreateStaffPayload) => Promise<void>;
+        submitting: boolean;
+        onCancel: () => void;
+    }
+    | {
+        mode: "edit";
+        initialData: Staff;
+        branches: Branch[];
+        onSubmit: (payload: UpdateStaffPayload) => Promise<void>;
+        submitting: boolean;
+        onCancel: () => void;
+    };
 
 const EMPTY_FORM: CreateStaffPayload = {
     branchId: "",
@@ -386,8 +404,8 @@ const StaffFormModal = ({
                                 ? "Saving..."
                                 : "Adding..."
                             : isEdit
-                            ? "Save changes"
-                            : "Add staff"}
+                                ? "Save changes"
+                                : "Add staff"}
                     </button>
                 </div>
             </form>
